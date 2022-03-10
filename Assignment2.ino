@@ -5,14 +5,14 @@ const byte WATCHDOG = 5;
 const byte BUTTON = 22; 
 const byte ERROR = 18;
 const byte SIG = 17;
-const byte TASK4 = 23;
+const byte TASK3 = 19;
 volatile int count = 1;
 volatile int avecount = 0;
 volatile int POTval[4] = {1, 1, 1, 1};
 volatile int POTvalave = 1;
 volatile byte BUTTONSTATE = 0;
 volatile byte error_code = 0;
-volatile double SIGFREQ = 0;
+volatile int SIGFREQ = 0;
 Ticker periodicTicker;
 
 void setup() 
@@ -24,40 +24,41 @@ void setup()
   pinMode(BUTTON, INPUT_PULLUP);
   pinMode(ERROR, OUTPUT);
   pinMode(SIG, INPUT);
-  periodicTicker.attach_ms(1, TICKER);
+  pinMode(TASK3, OUTPUT);
+  periodicTicker.attach_ms(2, TICKER);
 }
 
 
 void TICKER() 
 {
   count++;
-  if((count % 17) == 0)
+  if((count % 9) == 0)
   {
     RUNWATCHDOG();
   }
-  if((count % 42) == 0)
+  if((count % 21) == 0)
   {
     ADC();
     ADCAVE();
   }
-  if((count % 200) == 0)
+  if((count % 100) == 0)
   {
     BUTTONREAD();
   }
-  if((count % 100) == 0)
+  if((count % 50) == 0)
   {
     ASM();
   }
-  if((count % 1000) == 0)
+  if((count % 500) == 0)
   {
     SIGREAD();
   }
-  if((count % 333) == 0)
+  if((count % 167) == 0)
   {
     ERRORCALC();
     ERRORLED();
   }
-  if((count % 5000) == 0)
+  if((count % 2500) == 0)
   {
     SERIALPRINT();
   }
@@ -77,14 +78,12 @@ void RUNWATCHDOG()
 
 void ADC()
 {
-  digitalWrite(TASK4, HIGH);
   POTval[avecount] = analogRead(POT);
   avecount++;
   if(avecount >= 3) 
   {
     avecount = 0;
   }
-  digitalWrite(TASK4, LOW);
 }
 
 void ADCAVE()
@@ -114,12 +113,14 @@ void ASM()
 
 void SIGREAD()
 {
+  digitalWrite(TASK3, HIGH);
   int pulsetime = 0;
-  pulsetime = pulseIn(SIG, HIGH, 2500);
+  pulsetime = (pulseIn(SIG, HIGH, 2500)) * 2;
   if(pulsetime != 0)
   {
-    SIGFREQ = 1000000 / pulsetime;
+    SIGFREQ = (1000000 / pulsetime)* 0.96;
   }
+  digitalWrite(TASK3, LOW);
 }
 
 void ERRORCALC()
