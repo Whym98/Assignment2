@@ -24,9 +24,6 @@ void setup()
   pinMode(BUTTON, INPUT_PULLUP);
   pinMode(ERROR, OUTPUT);
   pinMode(SIG, INPUT);
-  ledcSetup(0, 58, 16);
-  ledcAttachPin(WATCHDOG, 0);
-  ledcWrite(0, 190);
   periodicTicker.attach_ms(1, TICKER);
 }
 
@@ -34,6 +31,10 @@ void setup()
 void TICKER() 
 {
   count++;
+  if((count % 17) == 0)
+  {
+    RUNWATCHDOG();
+  }
   if((count % 42) == 0)
   {
     ADC();
@@ -65,6 +66,13 @@ void TICKER()
 void loop()
 {
   
+}
+
+void RUNWATCHDOG()
+{
+  digitalWrite(WATCHDOG, HIGH);
+  delayMicroseconds(50);
+  digitalWrite(WATCHDOG, LOW);
 }
 
 void ADC()
