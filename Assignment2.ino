@@ -1,21 +1,24 @@
 const byte POT = 4; //Pin Definitions
 const byte WATCHDOG = 5;
-const byte BUTTON = 19; 
+const byte BUTTON = 22; 
 const byte ERROR = 18;
 const byte SIG = 17;
-volatile int count = 0;
+const byte TASK4 = 23;
+volatile int count = 1;
 volatile int avecount = 0;
-volatile int POTval[4] = {0, 0, 0, 0};
-volatile int POTvalave = 0;
+volatile int POTval[4] = {1, 1, 1, 1};
+volatile int POTvalave = 1;
 volatile byte BUTTONSTATE = 0;
 volatile byte error_code = 0;
 volatile double SIGFREQ = 0;
 
 void setup() 
 {
+  Serial.begin(115200);
   pinMode(POT, INPUT);
   pinMode(WATCHDOG, OUTPUT);
   pinMode(BUTTON, INPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
   pinMode(ERROR, OUTPUT);
   pinMode(SIG, INPUT);
   ledcSetup(0, 58, 16);
@@ -27,6 +30,7 @@ void setup()
 
 void loop() 
 {
+  count++;
   if((count % 42) == 0)
   {
     ADC();
@@ -53,18 +57,19 @@ void loop()
   {
     SERIALPRINT();
   }
-  delayMicroseconds(1);
-  count++;
+  delayMicroseconds(1000);
 }
 
 void ADC()
 {
+  digitalWrite(TASK4, HIGH);
   POTval[avecount] = analogRead(POT);
   avecount++;
   if(avecount >= 3) 
   {
     avecount = 0;
   }
+  digitalWrite(TASK4, LOW);
 }
 
 void ADCAVE()
@@ -80,7 +85,7 @@ void ADCAVE()
 
 void BUTTONREAD()
 {
-  BUTTONSTATE = digitalRead(BUTTON);
+  BUTTONSTATE = !digitalRead(BUTTON); 
 }
 
 void ASM()
@@ -96,7 +101,10 @@ void SIGREAD()
 {
   int pulsetime = 0;
   pulsetime = pulseIn(SIG, HIGH, 2500);
-  SIGFREQ = 1000000 / pulsetime;
+  if(pulsetime != 0)
+  {
+    SIGFREQ = 1000000 / pulsetime;
+  }
 }
 
 void ERRORCALC()
