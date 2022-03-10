@@ -1,3 +1,5 @@
+#include <Ticker.h>
+
 const byte POT = 4; //Pin Definitions
 const byte WATCHDOG = 5;
 const byte BUTTON = 22; 
@@ -11,6 +13,7 @@ volatile int POTvalave = 1;
 volatile byte BUTTONSTATE = 0;
 volatile byte error_code = 0;
 volatile double SIGFREQ = 0;
+Ticker periodicTicker;
 
 void setup() 
 {
@@ -24,11 +27,11 @@ void setup()
   ledcSetup(0, 58, 16);
   ledcAttachPin(WATCHDOG, 0);
   ledcWrite(0, 190);
+  periodicTicker.attach_ms(1, TICKER);
 }
 
 
-
-void loop() 
+void TICKER() 
 {
   count++;
   if((count % 42) == 0)
@@ -57,7 +60,11 @@ void loop()
   {
     SERIALPRINT();
   }
-  delayMicroseconds(1000);
+}
+
+void loop()
+{
+  
 }
 
 void ADC()
